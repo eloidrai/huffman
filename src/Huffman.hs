@@ -1,7 +1,6 @@
 module Huffman (createHuffman, getCodes, display, encode) where
 
 import Data.List (sort)
-import Data.Char (isAlpha)
 
 data Tree = Leaf {weight :: Integer, value :: Char} | Node {weight :: Integer, children :: (Tree, Tree)}
 
@@ -55,10 +54,10 @@ display tree = do
   putStrLn "}"
   where
     names = listNames tree 1
-    displayName (n, label) = (show n) ++ "[label=" ++ (show label) ++ (if ((isAlpha.head) label) then ", shape=record" else "") ++ "]\n"
+    displayName (n, label, kind) = (show n) ++ "[label=" ++ (show label) ++ (if (kind == 1) then ", shape=record" else "") ++ "]\n"
     edges = listEdges tree 1
     displayEdges (r, (c1, c2)) = (show r) ++ " -> {" ++ (show c1) ++ "," ++ (show c2)++ "};\n"
-    listNames (Node w (c1, c2)) n = (n, show w):((listNames c1 (2*n)) ++ (listNames c2 (2*n+1)))
-    listNames (Leaf w char) n = [(n, (char:" - "++(show w)))]
+    listNames (Node w (c1, c2)) n = (n, show w, 0):((listNames c1 (2*n)) ++ (listNames c2 (2*n+1)))
+    listNames (Leaf w char) n = [(n, ('\'':char:"' - " ++ (show w)), 1)]
     listEdges (Node w (c1, c2)) n = (n, (2*n, 2*n+1)):((listEdges c1 (2*n)) ++ (listEdges c2 (2*n+1)))
     listEdges (Leaf w char) n = []
