@@ -1,3 +1,7 @@
+module Main where
+
+import Huffman (createHuffman, getCodes, display, encode)
+
 import System.Environment
 import System.Console.GetOpt
 import System.IO
@@ -27,17 +31,17 @@ main = do
     printError $ intercalate "\n" errors
     exitWith ExitSuccess
   else if ((length nonOptions == 0) && (isNothing $ lookup "sample" options)) then do
-    printError "no option `-s' provided\n"
+    printError "no option '-s' provided\n"
     exitWith ExitSuccess
   else do
-    let huffmanTree = "tree"  -- s or first non option
-        codes = []
+    let tree = createHuffman $ maybe (head nonOptions) id (lookup "sample" options)
+        codes = getCodes tree ""
     if (isJust $ lookup "tree" options) then do
-      putStr ".dot"
+      display tree
     else if (isJust $ lookup "codewords" options) then do
-      putStr "table"
+      putStrLn $ intercalate "\n" (map (\(char, code) -> char:" -> " ++ code) codes)
     else if (isJust $ lookup "encode" options) then do
-      putStr "encoded"
-    else if (isJust $ lookup "encode" options) then do
+      putStrLn $ encode tree (maybe "" id (lookup "encode" options))
+    else if (isJust $ lookup "decode" options) then do
       putStr "decoded"
     else return ()

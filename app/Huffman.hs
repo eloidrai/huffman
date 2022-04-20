@@ -1,3 +1,5 @@
+module Huffman (createHuffman, getCodes, display, encode) where
+
 import Data.List (sort)
 import Data.Char (isAlpha)
 
