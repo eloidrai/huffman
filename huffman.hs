@@ -47,7 +47,7 @@ encode tree string  = concat $ map (\c -> maybe "" id (lookup c dict)) string
     dict = getCodes tree ""
 
 display tree = do
-  putStrLn "digraph g {labelloc=\"t\"\nlabel=\"Arbre de Huffman\""
+  putStrLn "digraph g {labelloc=\"t\"\n"
   (putStr.concat) (map displayName names)
   (putStr.concat) (map displayEdges edges)
   putStrLn "}"
