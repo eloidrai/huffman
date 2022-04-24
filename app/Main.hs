@@ -19,29 +19,31 @@ optionsDefinition = [sample, help, tree, codewords, encode, decode]
     decode = Option ['d'] ["decode"] (ReqArg (\s -> ("decode", s)) "MESSAGE")  "Decodes a message"
 
 displayHelp = putStr $ usageInfo "Huffman coding\n" optionsDefinition
-printError = (hPutStr stderr)
+printError = hPutStr stderr
 
 main = do
   args <- getArgs
-  let (options, nonOptions, errors) = (getOpt Permute optionsDefinition args)
-  if (isJust $ lookup "help" options) then do
+  let (options, nonOptions, errors) = getOpt Permute optionsDefinition args
+  if isJust $ lookup "help" options then do
     displayHelp
-    exitWith ExitSuccess
-  else if (length errors /= 0) then do
+    exitSuccess
+  else if not (null errors) then do
     printError $ intercalate "\n" errors
-    exitWith ExitSuccess
-  else if ((length nonOptions == 0) && (isNothing $ lookup "sample" options)) then do
+    exitSuccess
+  else if null nonOptions && isNothing (lookup "sample" options) then do
     printError "no option '-s' provided\n"
-    exitWith ExitSuccess
+    exitSuccess
   else do
-    let tree = createHuffman $ maybe (head nonOptions) id (lookup "sample" options)
-        codes = getCodes tree ""
-    if (isJust $ lookup "tree" options) then do
+    let tree = createHuffman $ fromMaybe (head nonOptions) (lookup "sample" options)
+        codes = getCodes tree
+    if isJust $ lookup "tree" options then
       display tree
-    else if (isJust $ lookup "codewords" options) then do
+    else if isJust $ lookup "codewords" options then
       putStrLn $ intercalate "\n" (map (\(char, code) -> char:" -> " ++ code) codes)
-    else if (isJust $ lookup "encode" options) then do
-      putStrLn $ encode tree (maybe "" id (lookup "encode" options))
-    else if (isJust $ lookup "decode" options) then do
+    else if isJust $ lookup "encode" options then
+      putStrLn $ encode tree (fromMaybe "" (lookup "encode" options))
+    else if isJust $ lookup "decode" options then do
       putStr "decoded"
-    else return ()
+    else do
+      putStrLn "To be implemented"
+      return ()
