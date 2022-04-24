@@ -1,6 +1,6 @@
 module Main where
 
-import Huffman (createHuffman, getCodes, display, encode)
+import Huffman (createHuffman, getCodes, display, encode, decode)
 
 import System.Environment
 import System.Console.GetOpt
@@ -43,7 +43,7 @@ main = do
     else if isJust $ lookup "encode" options then
       putStrLn $ encode tree (fromMaybe "" (lookup "encode" options))
     else if isJust $ lookup "decode" options then do
-      putStr "decoded"
+      putStrLn $ decode tree (fromMaybe "" (lookup "decode" options))
     else do
       putStrLn "To be implemented"
       return ()

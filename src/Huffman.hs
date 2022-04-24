@@ -1,4 +1,4 @@
-module Huffman (createHuffman, getCodes, display, encode) where
+module Huffman (createHuffman, getCodes, display, encode, decode) where
 
 import Data.List (sort, sortBy)
 import Data.Maybe (fromMaybe)
@@ -60,10 +60,12 @@ encode tree = concatMap (\c -> fromMaybe "" (lookup c dict))
   where
     dict = getCodes tree
 
-decode tree string = foldl dec ([], "") string
+decode :: Tree -> String -> String
+decode tree string = fst $ foldl dec ([], "") string
   where
-    dec (ok, partial) bit = maybe (ok, partial++[bit]) (\char ->  (ok++[char], "")) (lookup (partial++[bit]) dict)
     dict = map (\(char, code) -> (code, char)) (getCodes tree)
+    dec (ok, partial) bit = maybe (ok, partial++[bit]) (\char ->  (ok++[char], "")) (lookup (partial++[bit]) dict)
+
 
 display :: Tree -> IO ()
 display tree = do

@@ -18,4 +18,15 @@ This executable allows you to print the representation of the binary tree using 
 
 Example : `huffman -s "this is a huffman tree" -t | dot -Tpng -o tree.png`
 
-Displays : ![The tree](tree.png)
+![The tree](tree.png)
+
+## Encoding/decoding example
+
+Encoding : ```sh
+$ huffman -s "coucoutoi" -e "touco"
+01111100011
+```
+Decoding : ```sh
+$ huffman -s "coucoutoi" -d "01111100011"
+touco
+```
