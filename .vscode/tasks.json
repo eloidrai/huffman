@@ -16,7 +16,7 @@
         {
             "label": "run",
             "type": "shell",
-            "command": "cabal run -- huffman -s \"this is an example of a huffman tree\" -t",
+            "command": "cabal run -- huffman -s \"this is an example of a huffman tree\" -c",
             "problemMatcher": [],
             "group": {
                 "kind": "build",

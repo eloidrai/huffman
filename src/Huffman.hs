@@ -1,7 +1,8 @@
 module Huffman (createHuffman, getCodes, display, encode) where
 
-import Data.List (sort, sortOn)
+import Data.List (sort, sortBy)
 import Data.Maybe (fromMaybe)
+import Text.Printf
 
 data Tree = Leaf {weight :: Integer, value :: Char} | Node {weight :: Integer, children :: (Tree, Tree)}
 
@@ -42,15 +43,27 @@ createHuffman string = (head.process.sort.start) string
     process (t1:t2:nodes) = process $ sort $ t1 <> t2:nodes
 
 getCodes :: Tree  -> [(Char, String)]
-getCodes tree  = sortOn (length.snd) (codes tree "")
+getCodes tree  = sortBy (\(a, ca) (b, cb) -> if length ca /= length cb then compare (length ca) (length cb) else compare a b) (codes tree "")
   where
     codes (Leaf w v) code = [(v, code)]
     codes (Node w (c1, c2)) code = codes c1 (code++"0") ++ codes c2 (code++"1")
+
+getCannnonicalCodes :: [(Char, String)] -> [(Char, String)]
+getCannnonicalCodes cds = snd (foldl cannonical (0, []) cds)
+  where
+    cannonical :: (Integer, [(Char, String)]) -> (Char, String) -> (Integer, [(Char, String)])
+    cannonical (n, codes) (ch, code) = (n+1, codes ++ [(ch, printf (formatLen (length  code)) n :: String)])
+    formatLen n = printf "%%0%db" n :: String
 
 encode :: Tree -> String -> String
 encode tree = concatMap (\c -> fromMaybe "" (lookup c dict))
   where
     dict = getCodes tree
+
+decode tree string = foldl dec ([], "") string
+  where
+    dec (ok, partial) bit = maybe (ok, partial++[bit]) (\char ->  (ok++[char], "")) (lookup (partial++[bit]) dict)
+    dict = map (\(char, code) -> (code, char)) (getCodes tree)
 
 display :: Tree -> IO ()
 display tree = do
