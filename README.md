@@ -20,13 +20,15 @@ Example : `huffman -s "this is a huffman tree" -t | dot -Tpng -o tree.png`
 
 ![The tree](tree.png)
 
-## Encoding/decoding example
+## Encoding/decoding examples
 
-Encoding : ```sh
+Encoding : 
+```sh
 $ huffman -s "coucoutoi" -e "touco"
 01111100011
 ```
-Decoding : ```sh
+Decoding : 
+```sh
 $ huffman -s "coucoutoi" -d "01111100011"
 touco
 ```
