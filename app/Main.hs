@@ -42,7 +42,7 @@ main = do
     if isJust $ lookup "tree" options then
       display tree
     else if isJust $ lookup "codewords" options then
-      putStrLn $ intercalate "\n" (map (\(char, code) -> char:" -> " ++ code) codes)
+      putStrLn $ intercalate "\n" (map (\(char, code) -> char:" -> " ++ show code) codes)
     else if isJust $ lookup "encode" options then
       putStrLn $ encode tree (fromMaybe "" (lookup "encode" options))
     else if isJust $ lookup "decode" options then do

@@ -2,7 +2,7 @@ module Huffman (createHuffman, getCodes, display, encode, decode) where
 
 import Data.List (sort, sortBy, sortOn, insert)
 import Data.Maybe (fromMaybe)
-import Text.Printf
+import Text.Printf (printf)
 import Data.Bits (Bits(shift))
 
 data Tree = Leaf {weight :: Integer, value :: Char} | Node {weight :: Integer, children :: (Tree, Tree)}
@@ -23,6 +23,14 @@ instance Ord Tree where
       lastChild (Leaf weight value) = Leaf weight value
       lastChild (Node weight children) = lastChild $ fst children
 
+newtype SizedBits = SizedBits (Integer, Int)
+
+instance Show SizedBits where
+  show (SizedBits (val, size)) = drop (length string - size) string
+    where
+      format = "%0" ++ show size ++ "b"
+      string = printf format val
+
 merge :: Tree -> Tree -> Tree
 merge tree1 tree2 = Node (weight tree1 + weight tree2) (tree1, tree2)
 
@@ -42,36 +50,37 @@ createHuffman string = (head.process.sort.start) string
     process [t1] = [t1]
     process (t1:t2:nodes) = process $ sort $ merge t1 t2:nodes
 
-getCodes :: Tree  -> [(Char, String)]
-getCodes tree  = sortBy (\(a, ca) (b, cb) -> if length ca /= length cb then compare (length ca) (length cb) else compare a b) (codes tree "")
+getCodes :: Tree  -> [(Char, SizedBits)]
+getCodes tree  = sortBy (\(a, SizedBits (va, la)) (b, SizedBits (vb, lb) ) -> if la /= lb then compare la lb else compare va vb) (codes tree $ SizedBits (0, 0))
   where
     codes (Leaf w v) code = [(v, code)]
-    codes (Node w (c1, c2)) code = codes c1 (code++"0") ++ codes c2 (code++"1")
-
--- Returns integers representing the codes
-getCannonicalCodes :: Tree -> [(Char, Int)]
-getCannonicalCodes tree = reverse l'
-  where
-    l = sortOn snd $ sortOn fst $  map (\(c, code) -> (c, length code)) (getCodes tree)
-    l' :: [(Char, Int)]
-    l' = foldl f [] l
-    f :: [(Char, Int)] -> (Char, Int) ->  [(Char, Int)]
-    f [] (char, size) = [(char, 0)]
-    f acc@((_, lc):t) (char, size) = (char, c) : acc
+    codes (Node w (c1, c2)) code = codes c1 (add0 code) ++ codes c2 (add1 code)
       where
-        pnc = lc+1
-        s = size - (floor.(+1).logBase 2) (fromIntegral pnc) :: Int
-        c = shift pnc s
+        add0 (SizedBits (val, len)) = SizedBits (shift val 1, len+1)
+        add1 (SizedBits (val, len)) = SizedBits (shift val 1 +1, len+1)
+
+
+getCanonicalCodes :: Tree -> [(Char, SizedBits)]
+getCanonicalCodes tree = reverse $ foldl f [] lengths
+  where
+    lengths :: [(Char, Int)]
+    lengths = sortOn snd $ sortOn fst $  map (\(c, SizedBits (val, len)) -> (c, len)) (getCodes tree)
+    f [] (char, size) = [(char, SizedBits (0, size))]
+    f acc@((_, SizedBits (n, _)):_) (char, size) = (char, c) : acc
+      where
+        s = size - (floor.(+1).logBase 2) (fromIntegral (n+1))
+        c = SizedBits (shift (n+1) s, size)
 
 encode :: Tree -> String -> String
-encode tree = concatMap (\c -> fromMaybe "" (lookup c dict))
+encode tree = concatMap (\c -> show $ fromMaybe (SizedBits (0, 0)) (lookup c dict))
   where
     dict = getCodes tree
+
 
 decode :: Tree -> String -> String
 decode tree string = fst $ foldl dec ([], "") string
   where
-    dict = map (\(char, code) -> (code, char)) (getCodes tree)
+    dict = map  (\(char, bits) -> (show bits, char)) (getCodes tree)
     dec (ok, partial) bit = maybe (ok, partial++[bit]) (\char ->  (ok++[char], "")) (lookup (partial++[bit]) dict)
 
 
