@@ -1,8 +1,9 @@
 module Huffman (createHuffman, getCodes, display, encode, decode) where
 
-import Data.List (sort, sortBy)
+import Data.List (sort, sortBy, sortOn, insert)
 import Data.Maybe (fromMaybe)
 import Text.Printf
+import Data.Bits (Bits(shift))
 
 data Tree = Leaf {weight :: Integer, value :: Char} | Node {weight :: Integer, children :: (Tree, Tree)}
 
@@ -22,9 +23,8 @@ instance Ord Tree where
       lastChild (Leaf weight value) = Leaf weight value
       lastChild (Node weight children) = lastChild $ fst children
 
-instance Semigroup Tree
-  where
-    tree1 <> tree2 = Node (weight tree1 + weight tree2) (tree1, tree2)
+merge :: Tree -> Tree -> Tree
+merge tree1 tree2 = Node (weight tree1 + weight tree2) (tree1, tree2)
 
 counter :: Eq a => [a] -> [(a, Integer)]
 counter = foldl addChar []
@@ -40,7 +40,7 @@ createHuffman string = (head.process.sort.start) string
     process :: [Tree] -> [Tree]
     process [] = []
     process [t1] = [t1]
-    process (t1:t2:nodes) = process $ sort $ t1 <> t2:nodes
+    process (t1:t2:nodes) = process $ sort $ merge t1 t2:nodes
 
 getCodes :: Tree  -> [(Char, String)]
 getCodes tree  = sortBy (\(a, ca) (b, cb) -> if length ca /= length cb then compare (length ca) (length cb) else compare a b) (codes tree "")
@@ -48,12 +48,20 @@ getCodes tree  = sortBy (\(a, ca) (b, cb) -> if length ca /= length cb then comp
     codes (Leaf w v) code = [(v, code)]
     codes (Node w (c1, c2)) code = codes c1 (code++"0") ++ codes c2 (code++"1")
 
-getCannnonicalCodes :: [(Char, String)] -> [(Char, String)]
-getCannnonicalCodes cds = snd (foldl cannonical (0, []) cds)
+-- Returns integers representing the codes
+getCannonicalCodes :: Tree -> [(Char, Int)]
+getCannonicalCodes tree = reverse l'
   where
-    cannonical :: (Integer, [(Char, String)]) -> (Char, String) -> (Integer, [(Char, String)])
-    cannonical (n, codes) (ch, code) = (n+1, codes ++ [(ch, printf (formatLen (length  code)) n :: String)])
-    formatLen n = printf "%%0%db" n :: String
+    l = sortOn snd $ sortOn fst $  map (\(c, code) -> (c, length code)) (getCodes tree)
+    l' :: [(Char, Int)]
+    l' = foldl f [] l
+    f :: [(Char, Int)] -> (Char, Int) ->  [(Char, Int)]
+    f [] (char, size) = [(char, 0)]
+    f acc@((_, lc):t) (char, size) = (char, c) : acc
+      where
+        pnc = lc+1
+        s = size - (floor.(+1).logBase 2) (fromIntegral pnc) :: Int
+        c = shift pnc s
 
 encode :: Tree -> String -> String
 encode tree = concatMap (\c -> fromMaybe "" (lookup c dict))

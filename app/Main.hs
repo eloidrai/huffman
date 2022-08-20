@@ -9,6 +9,7 @@ import System.Exit
 import Data.Maybe
 import Data.List
 
+optionsDefinition :: [OptDescr ([Char], String)]
 optionsDefinition = [sample, help, tree, codewords, encode, decode]
   where
     sample = Option ['s'] ["sample"] (ReqArg (\s -> ("sample", s)) "SAMPLE")  "The set of symbols to use to create the tree"
@@ -18,9 +19,11 @@ optionsDefinition = [sample, help, tree, codewords, encode, decode]
     encode = Option ['e'] ["encode"] (ReqArg (\s -> ("encode", s)) "MESSAGE")  "Encodes a message"
     decode = Option ['d'] ["decode"] (ReqArg (\s -> ("decode", s)) "MESSAGE")  "Decodes a message"
 
+displayHelp :: IO ()
 displayHelp = putStr $ usageInfo "Huffman coding\n" optionsDefinition
 printError = hPutStr stderr
 
+main :: IO ()
 main = do
   args <- getArgs
   let (options, nonOptions, errors) = getOpt Permute optionsDefinition args
