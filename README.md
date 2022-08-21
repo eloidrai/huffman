@@ -37,8 +37,8 @@ touco
 
 The canonical Huffman code is a particular kind of huffman coding which makes it unique.
 
-```
-huffman -s "this is a huffman tree" -ca
+```sh
+$ huffman -s "this is a huffman tree" -ca
   -> 000
 i -> 100
 s -> 101
