@@ -1,10 +1,21 @@
-module Huffman (createHuffman, getCodes, display, encode, decode) where
+module Huffman (createHuffman, getCodes, getCanonicalCodes, display, encode, decode) where
 
 import Data.List (sort, sortBy, sortOn, insert)
 import Data.Maybe (fromMaybe)
 import Text.Printf (printf)
 import Data.Bits (Bits(shift))
 
+
+-- Tuple representing a given number of bits
+newtype SizedBits = SizedBits (Integer, Int)
+
+instance Show SizedBits where
+  show (SizedBits (val, size)) = drop (length string - size) string
+    where
+      format = "%0" ++ show size ++ "b"
+      string = printf format val
+
+-- The tree datatype
 data Tree = Leaf {weight :: Integer, value :: Char} | Node {weight :: Integer, children :: (Tree, Tree)}
 
 instance Show Tree where
@@ -22,14 +33,6 @@ instance Ord Tree where
       lastChild :: Tree -> Tree
       lastChild (Leaf weight value) = Leaf weight value
       lastChild (Node weight children) = lastChild $ fst children
-
-newtype SizedBits = SizedBits (Integer, Int)
-
-instance Show SizedBits where
-  show (SizedBits (val, size)) = drop (length string - size) string
-    where
-      format = "%0" ++ show size ++ "b"
-      string = printf format val
 
 merge :: Tree -> Tree -> Tree
 merge tree1 tree2 = Node (weight tree1 + weight tree2) (tree1, tree2)
@@ -58,7 +61,6 @@ getCodes tree  = sortBy (\(a, SizedBits (va, la)) (b, SizedBits (vb, lb) ) -> if
       where
         add0 (SizedBits (val, len)) = SizedBits (shift val 1, len+1)
         add1 (SizedBits (val, len)) = SizedBits (shift val 1 +1, len+1)
-
 
 getCanonicalCodes :: Tree -> [(Char, SizedBits)]
 getCanonicalCodes tree = reverse $ foldl f [] lengths
